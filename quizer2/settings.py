@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-47a$p48rw1h@eh(cdhc!9wi9na03r$4bl5=qozd!s01c!oph26
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['quizer2.eba-f7kvnxwe.us-west-2.elasticbeanstalk.com','127.0.0.1','172.31.34.239', 'localhost','172.31.6.160' ]
+ALLOWED_HOSTS = ['*' ]
 
 
 # Application definition
