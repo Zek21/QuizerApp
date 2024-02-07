@@ -1,0 +1,40 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  <!-- Bootstrap CSS -->
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Student Name: {{ student.first_name }} {{ student.last_name }}</h1>
+  <h2>{{ course.name }} Exam Results</h2>
+  <h3>Exam Name: {{ exam_result.exam.name }}</h3>
+  <h3>Score: {{ exam_result.score }}/{{ exam_result.total_questions }}<h3>
+  
+  <h2 class="mt-4">Questions</h2>
+  {% for question, user_answer in user_answers %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">{{ question.question_text }}</h5>
+        <p class="card-text">Correct answer: {{ question.correct_answer.choice_text }}</p>
+        {% if question.explanation_text %}
+          <p class="card-text">Explanation: {{ question.explanation_text }}</p>
+        {% endif %}
+        {% if question.explanation_image %}
+          <img src="{{ question.explanation_image.url }}" alt="Explanation Image" />
+        {% endif %}
+        {% if question.explanation_video %}
+          <a href="{{ question.explanation_video }}">Explanation Video</a>
+        {% endif %}
+        {% if user_answer and user_answer.choice %}
+          <p class="card-text">Your answer: {{ user_answer.choice.choice_text }}</p>
+        {% else %}
+          <p class="card-text">Question not answered</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

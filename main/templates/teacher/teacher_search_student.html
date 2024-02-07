@@ -1,0 +1,63 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  <!-- Bootstrap CSS -->
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %} Search for Student {% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Search for Student</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <h1 class="my-4">Search for Student</h1>
+  <form method="GET" action="{% url 'teacher_search_student' %}" class="mb-4">
+    <div class="d-flex justify-content-between">
+      <div class="form-group mr-2">
+        <label for="search" class="mr-2">Search:</label>
+        <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Enter student's username" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+  </form>
+
+  {% if students %}
+  <h2 class="my-4">Student List</h2>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+      <tr>
+        <td>{{ student.username }}</td>
+        <td>{{ student.first_name }}</td>
+        <td>{{ student.last_name }}</td>
+        <td><a href="{% url 'teacher_student_exams' student.id %}" class="btn btn-info">View Exams</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No students found.</p>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extrabody %}
+  <!-- Bootstrap JS -->
+  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+{% endblock %}

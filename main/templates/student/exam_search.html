@@ -1,0 +1,63 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  <!-- Bootstrap CSS -->
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %} Search for Exam {% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Search for Exam</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <h1 class="my-4">Search for Exam</h1>
+
+  <form method="GET" action="{% url 'student_search_exam' %}" class="mb-4">
+    <div class="form-group mr-2">
+      <label for="search" class="mr-2">Enter the code provided:</label>
+      <input type="text" id="search" name="search" value="{{ request.GET.search }}" placeholder="Enter the exam's code value provided by your teacher" class="form-control" style="width:100%;">
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary" style="width:100%;">Search</button>
+  </form>
+
+  {% if exams %}
+    <h2 class="my-4">Exam List</h2>
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Exam Name</th>
+          <th>Course</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for exam in exams %}
+        <tr>
+          <td>{{ exam.name }}</td>
+          <td>{{ exam.course.name }}</td>
+          <td>
+            <a href="{% url 'answer_exam' exam.id %}" class="btn btn-info">Answer Exam</a>
+            <!-- Here, '1' represents the page number, you can change it as needed -->
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  {% else %}
+    <p>No exams found.</p>
+
+  {% endif %}
+</div>
+
+{% endblock %}

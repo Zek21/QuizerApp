@@ -1,0 +1,53 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  <!-- Bootstrap CSS -->
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %} Student Exams {% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'teacher_search_student' %}">Search for Student</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Student Exams</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <h1 class="my-4">Student Exams</h1>
+  <h2>Student: {{ student.first_name }} {{ student.last_name }}</h2>
+
+  {% if exam_results %}
+  <h3 class="my-4">Exams</h3>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Exam Name</th>
+        <th>Score</th>
+        <th>Total Questions</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for exam_result in exam_results %}
+      <tr>
+        <td>{{ exam_result.exam.name }}</td>
+        <td>{{ exam_result.score }}</td>
+        <td>{{ exam_result.total_questions }}</td>
+        <td><a href="{% url 'teacher_view_exam_result' exam_result.id %}" class="btn btn-info">View Result</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No exams found for this student.</p>
+  {% endif %}
+
+  <a href="{% url 'teacher_search_student' %}" class="btn btn-primary">Back to Search</a>
+</div>
+
+{% endblock %}

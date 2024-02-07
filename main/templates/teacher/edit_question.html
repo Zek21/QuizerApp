@@ -1,0 +1,164 @@
+{% extends 'main/base.html' %}
+{% load widget_tweaks %}
+{% block title %} Edit Question {% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+<h1 class="text-center">Edit Question for Exam: {{ exam.name }}</h1>
+<form method="POST" enctype="multipart/form-data" id="question-form">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="{{ form.question_text.auto_id }}">{{ form.question_text.label }}</label>
+        <textarea name="{{ form.question_text.html_name }}" id="{{ form.question_text.auto_id }}" class="form-control"
+            rows="2" cols="50" required>{{ form.question_text.value|default:'' }}</textarea>
+    </div>
+    <br><br>
+    <div class="form-group">
+        <label for="{{ form.explanation_text.auto_id }}">{{ form.explanation_text.label }}</label>
+        <textarea name="{{ form.explanation_text.html_name }}" id="{{ form.explanation_text.auto_id }}"
+            class="form-control" rows="2" cols="50">{{ form.explanation_text.value|default:'' }}</textarea>
+    </div>
+    <br><br>
+    <div class="form-group">
+        <label for="{{ form.explanation_image.auto_id }}">{{ form.explanation_image.label }}</label>
+        {{ form.explanation_image|add_class:"form-control" }}
+        {% if form.instance.explanation_image %}
+        <img src="{{ form.instance.explanation_image.url }}" alt="Explanation Image" width="300" height="200" />
+        {% endif %}
+    </div>
+    <br><br>
+    <div class="form-group">
+        <label for="{{ form.explanation_video.auto_id }}">{{ form.explanation_video.label }}</label>
+        <input type="text" class="form-control" id="{{ form.explanation_video.auto_id }}" placeholder="Enter the video link here (e.g. https://www.youtube.com/watch?v=ynsBhCXm5Jk)" name="{{ form.explanation_video.name }}" value="{{ form.instance.explanation_video|default:'' }}">
+        {% if form.instance.explanation_video %}
+          <a href="{{ form.instance.explanation_video }}">Explanation Video</a>
+        {% endif %}
+    </div>
+    <h3>Choices</h3>
+    <div id="choice-form">
+        {% for choice in form.instance.choices.all %}
+        </br>
+        <div class="choice-form-row form-group row">
+            <div class="col-sm-8">
+                <textarea name="choice_text[]" class="form-control" rows="1" cols="50"
+                    required>{{ choice.choice_text }}</textarea>
+                <!-- Add a hidden input field for the choice ID -->
+                <input type="hidden" name="choice_id_{{ forloop.counter0 }}" value="{{ choice.id }}">
+            </div>
+            <div class="col-sm-2">
+                <div class="form-check">
+                    <!-- Add a hidden input field for the is_correct data -->
+                    <!-- Add a data-index attribute to the hidden input field -->
+                    <input type="hidden" name="is_correct_{{ forloop.counter0 }}"
+                        value="{% if choice.is_correct %}on{% endif %}" data-index="{{ forloop.counter0 }}">
+                    <!-- Add a data-index attribute to the checkbox -->
+                    <input type="checkbox" data-index="{{ forloop.counter0 }}"
+                        class="form-check-input is-correct-checkbox"{% if choice.is_correct %} checked{% endif %}>
+                    <label class="form-check-label">Is Correct</label>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <!-- Add a "Delete Choice" button -->
+                <button type="submit" name="delete_choice_{{ choice.id }}" class="btn btn-danger delete-choice-button"
+                        data-choice-id="{{ choice.id }}">Delete Choice</button>
+            </div>
+        
+        </div>
+
+        {% endfor %}
+        <br>
+        </br>
+    </div>
+    <br><br>
+    <button type="button" id="add-choice" class="btn btn-primary">Add Choice</button>
+    <br><br>
+    {% if messages %}
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+    <a href="{% url 'question_list' exam_id=exam.id %}" class="btn btn-danger">Cancel</a>
+    <input type="submit" value="Save Changes" class="btn btn-success">
+
+</form>
+
+<script>
+    // Add event listeners to the "Delete Choice" buttons
+    document.querySelectorAll('.delete-choice-button').forEach(button => {
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            const choiceId = event.target.getAttribute('data-choice-id');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch(`/delete_choice/${choiceId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the choice form row from the page
+                    const choiceFormRow = event.target.closest('.choice-form-row');
+                    choiceFormRow.remove();
+                }
+            });
+        });
+    });
+
+    // Add event listener to the "Add Choice" button
+    const addChoiceButton = document.getElementById('add-choice');
+    const choiceForm = document.getElementById('choice-form');
+
+    addChoiceButton.addEventListener('click', () => {
+        const newChoiceFormRow = document.createElement('div');
+        newChoiceFormRow.className = 'choice-form-row form-group row';
+
+        newChoiceFormRow.innerHTML = `
+    <br>
+    </br>
+            <div class="col-sm-8">
+                <textarea name="choice_text[]" class="form-control" rows="1" cols="50" required></textarea>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-check">
+                    <input type="hidden" name="is_correct_${choiceForm.childElementCount}" value="off">
+                    <input type="checkbox" class="form-check-input is-correct-checkbox">
+                    <label class="form-check-label">Is Correct</label>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-danger delete-choice-button" data-choice-id="new">Delete Choice</button>
+            </div>
+        `;
+
+        // Append the new choice form row to the choice form
+        choiceForm.appendChild(newChoiceFormRow);
+
+        // Add event listener to the new "Delete Choice" button
+        const deleteChoiceButton = newChoiceFormRow.querySelector('.delete-choice-button');
+        deleteChoiceButton.addEventListener('click', event => {
+            event.preventDefault();
+            newChoiceFormRow.remove();
+        });
+    });
+
+    document.querySelector('#question-form').addEventListener('click', (event) => {
+        if (event.target.classList.contains('is-correct-checkbox')) {
+            const index = event.target.getAttribute('data-index');
+            const hiddenInput = document.querySelector(`input[name='is_correct_${index}'][data-index='${index}']`);
+            if (event.target.checked) {
+                hiddenInput.value = 'on';
+            } else {
+                hiddenInput.value = '';
+            }
+        }
+    });
+
+</script>
+</script>
+{% endblock %}

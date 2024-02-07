@@ -1,0 +1,43 @@
+{% extends 'main/base.html' %}
+{% block title %} Create an Exam {% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div>
+    <h1>Create an exam</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{form.name|as_crispy_field}}
+        {{form.description|as_crispy_field}}
+        <!-- New field for the type of the exam -->
+        <div class="form-group">
+            <label for="{{ form.exam_type.id_for_label }}">Type</label>
+            <select name="{{ form.exam_type.html_name }}" class="form-control" id="{{ form.exam_type.id_for_label }}">
+                <option selected>*Select</option>
+                <option value="Quiz">Quiz</option>
+                <option value="Exam">Exam</option>
+            </select>
+        </div>
+        <!-- Fields for the duration of the exam -->
+        <div class="form-group">
+            <label>Duration</label>
+            <div class="row">
+                <div class="col">
+                    <input type="number" name="hours" class="form-control" placeholder="Hours">
+                </div>
+                <div class="col">
+                    <input type="number" name="minutes" class="form-control" placeholder="Minutes">
+                </div>
+                <div class="col">
+                    <input type="number" name="seconds" class="form-control" placeholder="Seconds">
+                </div>
+            </div>
+        </div>
+        <br>
+        <!-- Add a cancel button that redirects to the exam list page for the specific course -->
+        <a href="{% url 'teacher_exam_list' course_id=course.id %}" class="btn btn-danger">Cancel</a>
+        <button type="submit" class="btn btn-success"> Submit </button>
+    </form> 
+</div>
+
+{% endblock %}

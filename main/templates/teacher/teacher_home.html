@@ -1,0 +1,12 @@
+{% extends 'main/base.html' %}
+{% block title %} Home Page {% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-center alert alert-success alert-dismissible fade show" role="alert">
+      {% if user.is_authenticated and is_teacher%}
+         <h1>hi</h1>
+         {% else %}
+         <h1>student</h1>
+         {%endif%}
+    </div>
+
+{% endblock %}

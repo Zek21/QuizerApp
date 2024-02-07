@@ -1,0 +1,55 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+    <h1>Exam Results: {{ exam.name }}</h1>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Score</th>
+                <th>Percentage</th>
+                <th>Unanswered Questions</th>
+                <th>Incorrect Answers</th>
+                <th>Answered At</th>
+                <th>Total Time Taken</th> <!-- Add a new column for total time taken -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for exam_result in exam_results %}
+            <tr>
+                <td>{{ exam_result.user.first_name }} {{ exam_result.user.last_name }}</td> 
+                <td>{{ exam_result.score }}/{{ exam_result.total_questions }}</td>
+                <td>{{ exam_result.percentage }}%</td>
+                <td>{{ exam_result.unanswered_questions }}</td>
+                <td>{{ exam_result.incorrect_answers }}</td>
+                <td>{{ exam_result.answered_at }}</td>
+                <!-- Calculate total time taken and display it -->
+                <td>{{ exam_result.end_time|timeuntil:exam_result.start_time }}</td> 
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Add a new table for displaying time taken for each question -->
+    {% for user_answer in user_answers %}
+    <h2>Time Taken for Each Question by {{ user_answer.user.first_name }} {{ user_answer.user.last_name }}</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Time Taken</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question, user_answer in user_answers %}
+            <tr>
+                <!-- Display question text -->
+                <td>{{ question.question_text }}</td> 
+                <!-- Calculate time taken and display it -->
+                <td>{{ user_answer.end_time|timeuntil:user_answer.start_time }}</td> 
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+{% endblock %}

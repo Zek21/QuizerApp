@@ -1,0 +1,169 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Answer Exam: {{ exam.name }}</h1>
+  {% if page_obj %}
+    <form method="post" id="answer-form">
+      {% csrf_token %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ page_obj.object_list.0.question_text }}</h5>
+          {% if remaining_time is not None and remaining_time >= 0 %}
+              <h2 id="exam-timer">Remaining time: <span id="remaining-time">{{ remaining_time }}</span> seconds</h2>
+          {% endif %}
+          <h2 id="question-timer">Time spent on this question: <span id="time-spent">{{ total_time_previous_sessions }}</span> seconds</h2>
+          {% for choice in page_obj.object_list.0.choices.all %}
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="question_{{ page_obj.object_list.0.id }}" value="{{ choice.id }}" {% if user_answer and user_answer.choice == choice %}checked{% endif %}>
+              <label class="form-check-label">{{ choice.choice_text }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        {% if page_obj.has_previous %}
+          <button type="submit" name="back" class="btn btn-secondary me-md-2">Back</button>
+        {% else %}
+          <button type="submit" name="back" class="btn btn-secondary me-md-2" disabled>Back</button>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <button type="submit" name="next" class="btn btn-primary">Next</button>
+        {% else %}
+          <button type="submit" name="next" class="btn btn-primary" disabled>Next</button>
+        {% endif %}
+ 
+        <!-- Add an ID to the submit button -->
+        <input type="submit" id="submit-exam-button" name="submit" value="Submit" class="btn btn-success">
+      </div>
+    </form>
+
+    <!-- Modal -->
+    <div class="modal fade" id="unansweredQuestionsModal" tabindex="-1" aria-labelledby="unansweredQuestionsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Unanswered Questions</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            There are {{ unanswered_question_ids|length }} unanswered questions. Do you want to answer them?
+          </div>
+          <div class="modal-footer">
+            <!-- Add an ID to the "Answer Questions" button -->
+            <button type="button" id="answer-questions-button" class="btn btn-secondary">Answer Questions</button>
+            <!-- Add an ID to the "Submit Anyway" button -->
+            <!-- Change this to an input element of type submit -->
+            <input type='submit' id='submit-anyway-button' value='Submit Anyway' form='answer-form' class='btn btn-primary'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+    <p>There are no questions for this exam.</p>
+  {% endif %}
+</div>
+
+<script>
+// Declare unansweredQuestionIds as a global variable
+var unansweredQuestionIds = JSON.parse('{{ unanswered_question_ids|escapejs }}');
+
+var questionId = '{{ page_obj.object_list.0.id }}';
+var questionStartTime = new Date();
+
+// Fetch total time spent on this question from previous sessions
+var totalPreviousTime = {{ total_time_previous_sessions }};
+var timeSpent = {{ total_time_previous_sessions }};
+
+// Update time spent every second
+setInterval(function() {
+  timeSpent += 1;
+  // Round timeSpent to the nearest whole number
+  var roundedTimeSpent = Math.round(timeSpent);
+  document.getElementById('time-spent').textContent = roundedTimeSpent;
+}, 1000);
+
+// Fetch remaining time from local storage, or set it to the exam duration if it doesn't exist
+var remainingTime = localStorage.getItem('remainingTime');
+
+if (!remainingTime) {
+    remainingTime = {{ exam.duration.total_seconds }};
+    localStorage.setItem('remainingTime', remainingTime);
+}
+
+// This variable will be true if the form is being submitted automatically when the timer hits zero
+var autoSubmit = false;
+
+var intervalId = setInterval(function() {
+  // Update 'remaining_time' in both the HTML and localStorage
+  var remainingTimeElement = document.getElementById('remaining-time');
+  remainingTime -= 1;
+  // Round remainingTime to the nearest whole number
+  var roundedRemainingTime = Math.round(remainingTime);
+  remainingTimeElement.textContent = roundedRemainingTime;
+  localStorage.setItem('remainingTime', roundedRemainingTime);
+
+  // If remainingTime is less than or equal to zero, click the "Submit Anyway" button
+  if (remainingTime <= 0) {
+      clearInterval(intervalId); // Clear the interval
+      autoSubmit = true; // Set autoSubmit to true
+      document.getElementById('submit-anyway-button').click(); // Trigger click event on "Submit Anyway" button
+  }
+}, 1000);
+
+$('#submit-exam-button').on('click', function(event) {
+  // If autoSubmit is false and there are unanswered questions, prevent form submission and show the modal
+  if (!autoSubmit && unansweredQuestionIds.length > 0) {
+      event.preventDefault();  // Prevent form submission
+      var modal = new bootstrap.Modal(document.getElementById('unansweredQuestionsModal'));
+      modal.show();
+  } else {
+      // Clear remainingTime from local storage
+      localStorage.removeItem('remainingTime');
+  }
+});
+
+$('#answer-questions-button').on('click', function() {
+  window.location.href = '{% url 'answer_exam' exam_id=exam.id page_number=first_unanswered_page_number %}' + '?question_id=' + unansweredQuestionIds[0];
+});
+
+document.getElementById('submit-anyway-button').addEventListener('click', function() {
+  // Clear remainingTime from local storage
+  localStorage.removeItem('remainingTime');
+});
+
+$('input[type=radio]').on('change', function() {
+    var questionId = $(this).attr('name').split('_')[1];
+    var choiceId = $(this).val();
+    
+    // Remove the answered question ID from unansweredQuestionIds
+    var index = unansweredQuestionIds.indexOf(questionId);
+    if (index !== -1) {
+        unansweredQuestionIds.splice(index, 1);
+    }
+    
+    $.ajax({
+        url: '{% url 'save_answer' %}',
+        method: 'POST',
+        data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+            'question_id': questionId,
+            'choice_id': choiceId
+        },
+        success: function(data) {
+            console.log('Answer saved successfully');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Failed to save answer:', error);
+        }
+    });
+});
+</script>
+{% endblock %}
