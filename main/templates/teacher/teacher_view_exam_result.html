@@ -21,15 +21,23 @@
         <h5 class="card-title">{{ question.question_text }}</h5>
         <p class="card-text">Correct answer: {{ question.correct_answer.choice_text }}</p>
         {% if question.explanation_text %}
+        <br>
+        </br>
           <p class="card-text">Explanation: {{ question.explanation_text }}</p>
         {% endif %}
         {% if question.explanation_image %}
+        <br>
+        </br>
           <img src="{{ question.explanation_image.url }}" alt="Explanation Image" />
         {% endif %}
         {% if question.explanation_video %}
+        <br>
+        </br>
           <a href="{{ question.explanation_video }}">Explanation Video</a>
         {% endif %}
         {% if user_answer %}
+        <br>
+        </br>
           <p class="card-text">Your answer: {{ user_answer.choice.choice_text }}</p>
           <p class="card-text">Time taken to answer this question in this session: {{ total_time_question|duration }}</p>
         {% else %}
