@@ -31,8 +31,10 @@
           <a href="{{ question.explanation_video }}">Explanation Video</a>
         {% endif %}
         {% if user_answer and user_answer.choice %}
+        <br>
           <p class="card-text">Your answer: {{ user_answer.choice.choice_text }}</p>
         {% else %}
+        <br>
           <p class="card-text">Question not answered</p>
         {% endif %}
       </div>
