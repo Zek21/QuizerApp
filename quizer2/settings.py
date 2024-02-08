@@ -50,8 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
     
-    'main.middleware.custom_middleware.RedirectUnauthenticatedMiddleware',
-    'main.middleware.custom_middleware.Redirect404Middleware',
+  #  'main.middleware.custom_middleware.RedirectUnauthenticatedMiddleware',
+ #   'main.middleware.custom_middleware.Redirect404Middleware',
     
     
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -135,8 +135,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
-
-
+MEDIA_DIR = BASE_DIR / 'explanations'
+MEDIA_ROOT = '/explanations/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

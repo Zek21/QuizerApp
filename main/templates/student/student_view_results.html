@@ -23,19 +23,24 @@
           <p class="card-text">Explanation: {{ question.explanation_text }}</p>
         {% endif %}
         {% if question.explanation_image %}
-          
-          <img src="{{ question.explanation_image.url }}" alt="Explanation Image" />
-        {% endif %}
         <br>
+          <img src="{{ question.explanation_image.url }}" alt="Explanation Image" />
+        </br>
+        {% endif %}
+          
         {% if question.explanation_video %}
+          <br>
           <a href="{{ question.explanation_video }}">Explanation Video</a>
+          </br>
         {% endif %}
         {% if user_answer and user_answer.choice %}
-        <br>
+          <br>
           <p class="card-text">Your answer: {{ user_answer.choice.choice_text }}</p>
+          </br>
         {% else %}
-        <br>
+          <br>
           <p class="card-text">Question not answered</p>
+          </br>
         {% endif %}
       </div>
     </div>
