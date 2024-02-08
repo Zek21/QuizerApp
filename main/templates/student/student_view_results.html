@@ -23,9 +23,10 @@
           <p class="card-text">Explanation: {{ question.explanation_text }}</p>
         {% endif %}
         {% if question.explanation_image %}
-          <br>
+          
           <img src="{{ question.explanation_image.url }}" alt="Explanation Image" />
         {% endif %}
+        <br>
         {% if question.explanation_video %}
           <a href="{{ question.explanation_video }}">Explanation Video</a>
         {% endif %}
