@@ -50,8 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
     
-  #  'main.middleware.custom_middleware.RedirectUnauthenticatedMiddleware',
- #   'main.middleware.custom_middleware.Redirect404Middleware',
+    'main.middleware.custom_middleware.RedirectUnauthenticatedMiddleware',
+    'main.middleware.custom_middleware.Redirect404Middleware',
     
     
     'django.contrib.messages.middleware.MessageMiddleware',
